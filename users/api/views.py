@@ -40,6 +40,8 @@ class UsersListView(ListAPIView):
     permission_classes = [
         AllowAny,
     ]
+    serializer_class = UsersListSerializer
+    queryset = get_user_model().objects.all()
 
     def get(self, request):
         users = get_user_model().objects.all()
