@@ -1,5 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
-
+# from users.models import EmailUser, PhoneUser
 
 # Create user with either email or phone number
 class CustomUserManager(BaseUserManager):
@@ -31,3 +31,25 @@ class CustomUserManager(BaseUserManager):
 
     def get_by_natural_key(self, email):
         return self.get(email=email) 
+
+
+
+
+# class UserManager(BaseUserManager):
+#     def _create_user(self, *args, **kwargs):
+#         user = self.model(*args, **kwargs)
+#         user.save(using=self._db)
+#         self._create_email(user)
+#         self._create_phone(user)
+#         return user
+
+#     def _create_email(self, user):
+#         if user.email:
+#             EmailUser.objects.create(user=user)
+
+#     def _create_phone(self, user):
+#         if user.phone:
+#             PhoneUser.objects.create(user=user)
+
+
+

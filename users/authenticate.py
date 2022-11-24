@@ -35,8 +35,8 @@ class PhoneModelBackend(ModelBackend):
                 phone = kwargs.get(UserModel.USERNAME_FIELD)
             if phone is None and password is None:
                 return
-            user = UserModel._default_manager.filter(phone=phone).first()
-            # print("backend", user.phone)
+            user = UserModel._default_manager.get(phone=phone)
+            print("backend", user.phone)
         except UserModel.DoesNotExist:
             UserModel().set_password(password)
 

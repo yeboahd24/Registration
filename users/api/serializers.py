@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext as _
 from django.contrib.auth import authenticate
 
+# from users.models import EmailUser, PhoneUser
 
 
 UserModel = get_user_model()
@@ -12,6 +13,7 @@ phone_regex = RegexValidator(
     regex=r"^233\d{2}\s*?\d{3}\s*?\d{4}$",
     message=_("Invalid phone number."),
 )
+
 
 class UsersListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,7 +49,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(UserRegisterSerializer, self).__init__(*args, **kwargs)
-        self.fields["phone"] = serializers.HiddenField(default="", validators=[phone_regex])
+        self.fields["phone"] = serializers.HiddenField(
+            default="", validators=[phone_regex]
+        )
 
     def create(self, validated_data):
         email = validated_data["email"]
@@ -58,23 +62,25 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         print("username_field1", self.username_field)
 
         if check_value_type == "phone":
-            if self.username_field == (UserModel._meta.get_field("email")):
-                self.username_field = UserModel._meta.get_field("phone")
-                validated_data["phone"] = email
+            # if self.username_field == (UserModel._meta.get_field("email")):
+            # self.username_field = UserModel._meta.get_field("phone")
+            # validated_data["phone"] = email
 
             user = get_user_model().objects.create_user(**validated_data)
             user.set_password(password)
             user.email = None
+            user.phone = validated_data["email"]
             user.save()
             return user
         elif check_value_type == "email":
-            if self.username_field == (UserModel._meta.get_field("phone")):
-                self.username_field = UserModel._meta.get_field("email")
-                validated_data["email"] = email
+            # if self.username_field == (UserModel._meta.get_field("phone")):
+            # self.username_field = UserModel._meta.get_field("email")
+            # validated_data["email"] = email
 
             user = get_user_model().objects.create_user(**validated_data)
             user.set_password(password)
             user.phone = None
+            user.email = validated_data["email"]
             user.save()
             return user
 
@@ -111,8 +117,6 @@ def validate_email_or_phone(value, check_type=None):
         return check_type
     else:
         raise serializers.ValidationError("Invalid email or phone number.")
-
-
 
 
 # Login Serializer
