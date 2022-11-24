@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 # from users.models import EmailUser, PhoneUser
 
 
-UserModel = get_user_model()
+User = get_user_model()
 
 phone_regex = RegexValidator(
     regex=r"^233\d{2}\s*?\d{3}\s*?\d{4}$",
@@ -53,34 +53,26 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             default="", validators=[phone_regex]
         )
 
-    def create(self, validated_data):
-        email = validated_data["email"]
-        password = validated_data["password"]
-        check_value_type = validate_email_or_phone(email)
-        self.username_field = UserModel._meta.get_field(UserModel.USERNAME_FIELD)
-
-        print("username_field1", self.username_field)
-
-        if check_value_type == "phone":
-            # if self.username_field == (UserModel._meta.get_field("email")):
-            # self.username_field = UserModel._meta.get_field("phone")
-            # validated_data["phone"] = email
-
-            user = get_user_model().objects.create_user(**validated_data)
-            user.set_password(password)
-            user.email = None
-            user.phone = validated_data["email"]
+    def save(self):
+        check_value_type = validate_email_or_phone(self.validated_data["email"])
+        if check_value_type == "email":
+            user = User.objects.create(
+                email=self.validated_data["email"],
+                first_name=self.validated_data["first_name"],
+                last_name=self.validated_data["last_name"],
+            )
+            user.phone_number = None
+            user.set_password(self.validated_data["password"])
             user.save()
             return user
-        elif check_value_type == "email":
-            # if self.username_field == (UserModel._meta.get_field("phone")):
-            # self.username_field = UserModel._meta.get_field("email")
-            # validated_data["email"] = email
-
-            user = get_user_model().objects.create_user(**validated_data)
-            user.set_password(password)
-            user.phone = None
-            user.email = validated_data["email"]
+        else:
+            user = User.objects.create(
+                phone_number=self.validated_data["email"],
+                first_name=self.validated_data["first_name"],
+                last_name=self.validated_data["last_name"],
+            )
+            user.set_password(self.validated_data["password"])
+            user.email = None
             user.save()
             return user
 

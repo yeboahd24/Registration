@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from .serializers import UserRegisterSerializer, UsersListSerializer, LoginSerializer
 from users.models import User
 
+
 class UserRegisterView(APIView):
     permission_classes = [
         AllowAny,
@@ -25,6 +26,7 @@ class UserRegisterView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = self.perform_create(serializer)
+            user.set_password(request.POST.get("password"))
 
             # add tokens
             refresh = RefreshToken.for_user(user)
@@ -91,7 +93,7 @@ class LoginView(APIView):
                     "access": str(refresh.access_token),
                 }
                 return Response(res, status=status.HTTP_200_OK)
-            
+
             elif data == "phone":
                 user = User.objects.get(phone=email)
                 print("user", user.phone)
@@ -109,4 +111,4 @@ class LoginView(APIView):
                     "access": str(refresh.access_token),
                 }
                 return Response(res, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
